@@ -31,3 +31,12 @@ class Product(ProductBase):
     Full product model with product id
     """
     id: UUID = Field(default_factory=uuid4)
+
+class ProductListResponse(BaseModel):
+    """
+    Model for product list response
+    """
+    total: int
+    skip: int
+    limit: int
+    data : list[Product]

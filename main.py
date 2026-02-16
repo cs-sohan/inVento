@@ -1,5 +1,5 @@
-from fastapi import FastAPI, HTTPException
-from models import Product,ProductCreate,ProductUpdate
+from fastapi import FastAPI, HTTPException, Query
+from models import Product,ProductCreate,ProductUpdate,ProductListResponse
 from uuid import UUID
 
 app = FastAPI()
@@ -21,9 +21,18 @@ for product in initial_products:
 def home():
     return {"message":"Hello, Welcome to the application!"}
 
-@app.get("/products",response_model=list[Product],tags=["Products"])
-def get_all_products():
-    return list(products.values())
+@app.get("/products",response_model=ProductListResponse,tags=["Products"])
+def get_all_products(
+    skip: int = Query(0,ge=0),
+    limit: int = Query(10,ge=0)
+):
+    product_list = list(products.values())
+    return {
+        "total": len(product_list),
+        "skip": skip,
+        "limit": limit,
+        "data": product_list[skip:skip+limit]
+    }
 
 @app.get("/products/{product_id}",response_model=Product,tags=["Products"])
 def get_product_by_id(product_id: UUID):
