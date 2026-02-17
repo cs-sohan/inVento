@@ -1,20 +1,14 @@
 from fastapi import FastAPI, HTTPException, Query
 from models import Product,ProductCreate,ProductUpdate,ProductListResponse
 from uuid import UUID
+from typing import Optional, Literal
+from dummy_data import generate_dummy_data
 
 app = FastAPI()
 
+# Get initial products list
 products : dict[UUID,Product] = {}
-
-initial_products = [
-    Product(name='IPhone',description="Apple Iphone",price=999,quantity=10),
-    Product(name='Laptop',description="Good Quality laptop",price=1098,quantity=7),
-    Product(name='Chair',description="Good Chair",price=36,quantity=58),
-    Product(name='Chocolate',description="Tasty chocolate",price=5,quantity=98),
-    Product(name='Gun',description="",price=999,quantity=1),
-]
-
-for product in initial_products:
+for product in generate_dummy_data():
     products[product.id] = product
 
 @app.get("/")
@@ -24,9 +18,34 @@ def home():
 @app.get("/products",response_model=ProductListResponse,tags=["Products"])
 def get_all_products(
     skip: int = Query(0,ge=0),
-    limit: int = Query(10,ge=0)
+    limit: int = Query(10,ge=1),
+    min_price: Optional[float] = Query(None,gt=0),
+    max_price: Optional[float] = Query(None,gt=0),
+    search_filter: Optional[str] = None,
+    sort_by: Optional[Literal['name','price','quantity']] = None,
+    order: Literal['asc','desc'] = 'asc'
 ):
     product_list = list(products.values())
+    # price filtering
+    if min_price is not None:
+        product_list = [p for p in product_list if p.price >= min_price]
+    if max_price is not None:
+        product_list = [p for p in product_list if p.price <= max_price]
+    # search filter
+    search_fields = ['name','description']
+    if search_filter:
+        search = search_filter.lower()
+        product_list = [
+            p for p in product_list 
+            if any(
+                search in (getattr(p,search_field) or "").lower()
+                            for search_field in search_fields
+                    )
+                ]
+    # sorting
+    if sort_by:
+        reverse = order == 'desc'
+        product_list.sort(key=lambda p: getattr(p,sort_by), reverse=reverse)
     return {
         "total": len(product_list),
         "skip": skip,
