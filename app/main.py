@@ -62,7 +62,7 @@ def update_product(
     service: ProductService = Depends(get_product_service),
 ):
     updated_product = service.update(product_id, product_update)
-    if not update_product:
+    if not updated_product:
         raise HTTPException(status_code=404, detail="Product Not Found!")
     return updated_product
 
