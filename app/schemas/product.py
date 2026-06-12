@@ -4,10 +4,6 @@ from uuid import UUID, uuid4
 
 
 class ProductBase(BaseModel):
-    """
-    Product Base Model
-    """
-
     name: str = Field(
         ...,
         min_length=3,
@@ -33,18 +29,10 @@ class ProductBase(BaseModel):
 
 
 class ProductCreate(ProductBase):
-    """
-    Model to create a new product
-    """
-
     pass
 
 
 class ProductUpdate(BaseModel):
-    """
-    Model to update existing product
-    """
-
     name: Optional[str] = Field(
         None,
         min_length=3,
@@ -70,18 +58,10 @@ class ProductUpdate(BaseModel):
 
 
 class Product(ProductBase):
-    """
-    Full product model with product id
-    """
-
     id: UUID = Field(default_factory=uuid4)
 
 
 class ProductListResponse(BaseModel):
-    """
-    Model for product list response
-    """
-
     total: int
     skip: int
     limit: int

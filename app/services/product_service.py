@@ -1,5 +1,5 @@
 from uuid import UUID
-from models import Product, ProductCreate, ProductUpdate
+from schemas import Product, ProductCreate, ProductUpdate
 from typing import Optional, Literal, Any
 
 
@@ -18,12 +18,10 @@ class ProductService:
         order: Literal["asc", "desc"],
     ) -> dict[str, Any]:
         product_list = list(self.products.values())
-        # price filtering
         if min_price is not None:
             product_list = [p for p in product_list if p.price >= min_price]
         if max_price is not None:
             product_list = [p for p in product_list if p.price <= max_price]
-        # search filter
         search_fields = ["name", "description"]
         if search_filter:
             search = search_filter.lower()
@@ -35,7 +33,6 @@ class ProductService:
                     for search_field in search_fields
                 )
             ]
-        # sorting
         if sort_by:
             reverse = order == "desc"
             product_list.sort(key=lambda p: getattr(p, sort_by), reverse=reverse)
